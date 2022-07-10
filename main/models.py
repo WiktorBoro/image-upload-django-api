@@ -1,17 +1,19 @@
 from django.db import models
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+def validate_image_height(value):
+    for height in value.split(','):
+        try:
+            int(height)
+        except ValueError:
+            raise ValidationError("The heights must be numbers written after ,")
+        return value
 
 
 class AccountTiers(models.Model):
-    def validate_image_height(self, image_height):
-        for height in image_height.split(','):
-            try:
-                int(height)
-            except ValueError:
-                raise ValidationError("The heights must be numbers written after ,")
-            return image_height
-
     account_tiers = models.CharField(max_length=50)
     arbitrary_thumbnail_sizes = models.BooleanField(default=False)
     link_to_the_originally_uploaded_file = models.BooleanField(default=False)
@@ -23,10 +25,11 @@ class AccountTiers(models.Model):
         return self.account_tiers
 
 
-class UserModel(User, models.Model):
+class Users(models.Model):
     user_name = models.CharField(max_length=50)
-    password = None
-    account_tiers = models.OneToOneField(AccountTiers, on_delete=models.CASCADE)
+    # password = models.CharField(max_length=128)
+    # api_key = models.CharField(max_length=128)
+    account_tiers = models.ForeignKey(AccountTiers, on_delete=models.CASCADE)
 
     objects = models.Manager()
 
@@ -35,8 +38,7 @@ class UserModel(User, models.Model):
 
 
 class Image(models.Model):
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
     image_name = models.CharField(max_length=50)
     image = models.ImageField()
 
@@ -48,9 +50,16 @@ class Image(models.Model):
 
 class ImageLinks(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
     link = models.URLField()
     size = models.SmallIntegerField()
+    link_name = models.CharField(default=image.name.__str__() + " - " + size.__str__(), max_length=100)
+    expiring = models.SmallIntegerField(default=1,
+                                        validators=[
+                                            MaxValueValidator(100),
+                                            MinValueValidator(1)
+                                        ])
     objects = models.Manager()
 
     def __str__(self):
-        return self.image
+        return self.link_name
