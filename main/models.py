@@ -50,8 +50,8 @@ class Images(models.Model):
     link = models.URLField(null=True)
     expiring_time = models.SmallIntegerField(default=1,
                                              validators=[
-                                                 MaxValueValidator(100),
-                                                 MinValueValidator(1)
+                                                 MaxValueValidator(30000),
+                                                 MinValueValidator(300)
                                              ])
     objects = models.Manager()
 
