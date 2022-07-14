@@ -10,7 +10,7 @@ def validate_image_height(value):
             int(height)
         except ValueError:
             raise ValidationError("The heights must be numbers written after ,")
-        return value
+    return value
 
 
 class AccountTiers(models.Model):
