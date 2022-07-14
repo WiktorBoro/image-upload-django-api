@@ -21,11 +21,10 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('', views.home, name='main'),
     path('api/upload-image', views.UploadImage.as_view(), name='upload image'),
     path('api/get-image-list', views.GetImageList.as_view(), name='image list'),
     path('api/generate-expiring-link', views.GenerateExpiringLink.as_view(), name='generate expiring link'),
     path('swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

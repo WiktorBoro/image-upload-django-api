@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from .models import Users, Images
 from json.decoder import JSONDecodeError
 import base64
@@ -21,16 +20,12 @@ from drf_yasg import openapi
 nbytes_url_code = 16
 
 
-def home(request):
-    return HttpResponse('<center><h1>Hello World!</h1></center>')
-
-
 # here you can add more user authorization password / login / api key
 def check_user_and_image_name(func):
     def wrapper(*args):
         self, request = args
         try:
-            user_name = request.GET['user_name']
+            user_name = request.GET.get('user_name', False)
             user = Users.objects.get(user_name=user_name)
         except ObjectDoesNotExist:
             return Response({'Failure': 'User does not exist! Please try to enter the user again!'},
@@ -77,10 +72,12 @@ class GetImageList(APIView):
     @check_user_and_image_name
     def get(self, request, user):
         """
+        GET:
+        Returns a list of all images in all possible sizes for the given user and their account level
 
-        :param request:
-        :param user:
-        :return:
+        :param str user: required
+        :return: 200: Dict with links
+        :return: 400: Dict with error message
         """
         link_and_links_dict = dict()
         for original_image in Images.objects.filter(user=user, original=True).all():
@@ -94,7 +91,7 @@ class GetImageList(APIView):
 
         if link_and_links_dict:
             return Response(link_and_links_dict, status.HTTP_200_OK)
-        return Response({'Failure': 'User has no graphics!'}, status.HTTP_400_BAD_REQUEST)
+        return Response({'Failure': 'User has no images!'}, status.HTTP_400_BAD_REQUEST)
 
 
 class UploadImage(APIView):
@@ -129,11 +126,12 @@ class UploadImage(APIView):
         :param request: POST
         :param str user: required
         :param str image_name:  required
-        :param request_json:
-
-        :return:
+        :param json request_json: json content with base64 required
+        :return: 201: Dict with link
+        :return: 400: Dict with error message
         """
-        domain = request.META['HTTP_HOST']
+        # Second option for testing
+        domain = request.META.get('HTTP_HOST', '127.0.0.1:8000')
 
         if Images.objects.filter(user=user, image_name=image_name).exists():
             return Response({'Failure': 'You already have a graphic with that name!'},
@@ -240,19 +238,27 @@ class GenerateExpiringLink(APIView):
         If you have the appropriate permissions, generate an expiring link to the binary graphic
 
         :param request:
-        :param user:
-        :param image_name:
-        :param request_json:
+        :param str user: required
+        :param str image_name:  required
+        :param json request_json: json content with base64 required
+        :return: 201: Dict with expiring_time
+        :return: 400: Dict with error message
 
         :return:
         """
-        domain = request.META['HTTP_HOST']
+        # Second option for testing
+        domain = request.META.get('HTTP_HOST', '127.0.0.1:8000')
 
         if not user.account_tier.ability_to_generate_expiring_links:
             return Response({'Failure': 'You do not have the correct account tier, buy an upgrade!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        expiring_time = request_json['expiring_time']
+        try:
+            expiring_time = int(request_json['expiring_time'])
+        except KeyError:
+            return Response({'Failure': 'Enter the link expiring_time!'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         if not 300 <= expiring_time <= 30000:
             return Response({'Failure': 'The expiry time must be between 300 and 30000'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -266,7 +272,7 @@ class GenerateExpiringLink(APIView):
         file_name = token_urlsafe(nbytes=nbytes_url_code) + "." + image_format
 
         # Opened the image through pillow, convert to binary and save to BytesIO()
-        image = Image.open(path.join(settings.STATICFILES_DIRS[0], original_image.original_id))
+        image = Image.open(original_image.image)
         image = image.convert('1')
         img_to_save = BytesIO()
         image.save(fp=img_to_save, format=image_format, quality=100)
@@ -285,7 +291,7 @@ class GenerateExpiringLink(APIView):
 
         # We start a separate countdown until the link expires and the graphics disappear
         self.image_link_expiration.delay(expiring_time=expiring_time, expiring_link=expiring_link)
-        return Response({'Generating': 'Succes', 'expiring_link': expiring_link}, status=status.HTTP_201_CREATED)
+        return Response({'Generating': 'Success', 'expiring_link': expiring_link}, status=status.HTTP_201_CREATED)
 
     # Function responsible for countdown and deleting image
     @shared_task(bind=True)

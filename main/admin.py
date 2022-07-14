@@ -33,7 +33,7 @@ class ImageAdmin(admin.ModelAdmin):
 
 class ImageLinksAdmin(admin.TabularInline):
     model = Images
-    fields = ['link', 'image_name', 'height', 'width', 'original', 'expiring', 'expiring_time']
+    fields = ['link', 'image_name', 'height', 'width', 'original', 'expiring_time']
     max_num = 0
 
 

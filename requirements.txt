@@ -1,0 +1,9 @@
+djangorestframework==3.13.1
+Pillow==9.2.0
+Django==4.0.6
+celery==5.2.7
+drf-yasg==1.20.0
+PyYAML==5.1.1
+django-heroku==0.3.1
+django-db==0.0.7
+django-filter==22.1
