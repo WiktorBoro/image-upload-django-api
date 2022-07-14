@@ -1,9 +1,9 @@
-#Image upload based on django
+# Image upload based on django
 
-#API capabilities
+# API capabilities
 
 ### Upload image
-Upload image in base64 format for users created on the database side
+Upload image in base64 format (you can use https://www.base64-image.de/) for users created on the database side
 
 In the response, you will get links to graphics relevant to the given account tiers
 
@@ -44,9 +44,9 @@ and for macs
 ## Go to your local host 
 http://127.0.0.1:8000/
 
-####There is a swagger on the homepage with skinned information about api.
+#### There is a swagger on the homepage with skinned information about api.
 
-####The rest of the api information is in the views.py file
+#### The rest of the api information is in the views.py file
 
 ## Go to admin page
 
