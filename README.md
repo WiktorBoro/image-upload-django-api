@@ -16,7 +16,7 @@ Generate an expiring link to binary graphics if your account level allows it
 # Quickstart
 
 ## Clone repository
-`git clone https://github.com/WiktorBoro/rock-paper-scissors.git`
+`git clone https://github.com/WiktorBoro/image-upload-django-api.git`
 
 ## Install the libraries
 `pip install -r requirements.txt`

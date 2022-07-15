@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.conf import settings
 
 
 def validate_image_height(value):
@@ -43,7 +42,7 @@ class Images(models.Model):
 
     width = models.SmallIntegerField(null=True)
     height = models.SmallIntegerField(null=True)
-    image = models.ImageField(upload_to=settings.STATICFILES_DIRS[0], height_field='height', width_field='width')
+    image = models.ImageField(height_field='height', width_field='width')
     original = models.BooleanField(default=False)
     original_id = models.CharField(max_length=100, null=True)
 

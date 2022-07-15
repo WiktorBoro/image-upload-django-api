@@ -26,6 +26,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 SECRET_KEY = 'django-insecure-n(dia395+94i+w3@$s#s749_-89hm+tsm2dydc6#i@0ksh&5=e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# When deployed on the Heroku, the following line should be False
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -121,11 +122,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'image/'
+STATIC_URL = '/image/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "main/templates/image",
+    os.path.join(BASE_DIR, "main/templates/image"),
 ]
+
+MEDIA_URL = "/images/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -137,4 +141,5 @@ CELERY_BROKER_URL = "redis://:IoZE8NXahwraq2h2LnYWYZCUYJmGPVzf@redis-13684.c250.
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
+# When deployed on the Heroku, the following line should be uncommented
 # django_heroku.settings(locals())

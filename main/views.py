@@ -56,7 +56,7 @@ def check_user_and_image_name(func):
 def generate_link(domain: str,
                   file_name: str) -> str:
     protocol_http_https = "http://"
-    return f'{protocol_http_https}{domain}{settings.STATIC_URL}{file_name}'
+    return f'{protocol_http_https}{domain}{settings.MEDIA_URL}{file_name}'
 
 
 class GetImageList(APIView):
@@ -154,17 +154,18 @@ class UploadImage(APIView):
         # END base64 operation
 
         # Prepared the original image to be saved in db and saved
+        original_link = generate_link(domain=domain, file_name=file_name)
         image = ContentFile(image, name=file_name)
         original_image = Images(image=image,
                                 image_name=image_name,
                                 user=user,
                                 original=True,
                                 original_id=file_name,
-                                link=generate_link(domain=domain, file_name=file_name))
+                                link=original_link)
         original_image.save()
         link_dict = self.create_other_image_sizes_and_links_(user=user,
                                                              domain=domain,
-                                                             original_image=original_image,
+                                                             original_link=original_link,
                                                              image_format=image_format)
         return Response({'Upload': 'Success', 'links': link_dict}, status=status.HTTP_201_CREATED)
 
@@ -172,14 +173,14 @@ class UploadImage(APIView):
     def create_other_image_sizes_and_links_(self,
                                             user,
                                             domain,
-                                            original_image,
+                                            original_link,
                                             image_format) -> dict:
         link_dict = dict()
         sizes_to_generating_url = user.account_tier.image_height
 
         # If user have required account tier we add original size to generate link
         if user.account_tier.link_to_the_originally_uploaded_file:
-            link_dict.update({'original': original_image.link})
+            link_dict.update({'original': original_link})
 
         # We iterate over all the sizes to be generated
         for size in sizes_to_generating_url.replace(' ', '').split(','):
@@ -187,7 +188,9 @@ class UploadImage(APIView):
             link = generate_link(domain=domain, file_name=file_name)
 
             # Opened the image through pillow, resize and save to BytesIO()
-            image = Image.open(path.join(settings.STATICFILES_DIRS[0], original_image.original_id))
+            original_image = Images.objects.get(user=user, link=original_link, original=True)
+
+            image = Image.open(original_image.image)
 
             new_height = int(size)
             new_width = int(new_height / original_image.height * original_image.width)
