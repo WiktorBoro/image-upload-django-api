@@ -177,6 +177,7 @@ class UploadImage(APIView):
                                             image_format) -> dict:
         link_dict = dict()
         sizes_to_generating_url = user.account_tier.image_height
+        original_image = Images.objects.get(user=user, link=original_link, original=True)
 
         # If user have required account tier we add original size to generate link
         if user.account_tier.link_to_the_originally_uploaded_file:
@@ -188,8 +189,6 @@ class UploadImage(APIView):
             link = generate_link(domain=domain, file_name=file_name)
 
             # Opened the image through pillow, resize and save to BytesIO()
-            original_image = Images.objects.get(user=user, link=original_link, original=True)
-
             image = Image.open(original_image.image)
 
             new_height = int(size)
