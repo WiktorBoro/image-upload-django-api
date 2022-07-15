@@ -13,6 +13,9 @@ Get all links for specific user relevant to his account tiers
 ### Generate expiring link
 Generate an expiring link to binary graphics if your account level allows it
 
+# Heroku deploy
+http://image-upload2.herokuapp.com/
+
 # Quickstart
 
 ## Clone repository
